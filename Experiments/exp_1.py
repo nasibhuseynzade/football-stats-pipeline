@@ -1,3 +1,5 @@
+# extracting data from API and saving all match scores to a CSV file
+
 import json
 import requests
 import pandas as pd
