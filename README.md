@@ -4,7 +4,7 @@ A data engineering project to extract, transform, and load (ETL) football match 
 
 First Experiment - Normalizing data 
 Second Experiment - Transforming matches data to a teams standing table
-
+Third Experiment - Team standing table with a daily scheduler
 ## Features
 - Extract match data from the Football Data API.
 - Transform raw JSON data into a clean, structured format.
