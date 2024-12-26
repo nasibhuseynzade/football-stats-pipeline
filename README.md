@@ -6,6 +6,7 @@ A data engineering project to extract, transform, and load (ETL) football match 
 - First Experiment - Normalizing data 
 - Second Experiment - Transforming matches data to a teams standing table
 - Third Experiment - Team standing table with a daily scheduler
+- Fourth Expeeriment - Loading to AWS S3 bucket
 
 ## Features
 - Extract match data from the Football Data API.
