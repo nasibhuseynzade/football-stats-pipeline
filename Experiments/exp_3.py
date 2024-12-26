@@ -13,7 +13,11 @@ from collections import defaultdict
 def extract_data():
     """Extract match data from football-data.org API"""
     url = "https://api.football-data.org/v4/competitions/PL/matches"
-    auth_token = "0d1a4376aa1c463c8952abef2008f1b3"
+    
+    with open("config.json") as f:
+        config = json.load(f)
+
+    auth_token = config["X-Auth-Token"]
     
     headers = {
         "X-Auth-Token": auth_token
