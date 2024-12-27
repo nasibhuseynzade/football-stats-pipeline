@@ -10,16 +10,18 @@ import requests
 from collections import defaultdict
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
+import io
 
+with open("config.json") as f:
+    config = json.load(f)
 
-def extract_data():
+auth_token = config["X-Auth-Token"]
+aws_access_key = config["aws_access_key_id"]
+aws_secret_key = config["aws_secret_access_key"]
+
+def extract_data(auth_token):
     """Extract match data from football-data.org API"""
     url = "https://api.football-data.org/v4/competitions/PL/matches"
-    
-    with open("config.json") as f:
-        config = json.load(f)
-
-    auth_token = config["X-Auth-Token"]
     
     headers = {
         "X-Auth-Token": auth_token
@@ -126,8 +128,10 @@ def transform_match_data(json_data):
     
     return df[columns]
 
+import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
-def load_to_s3(dataframe, bucket_name, file_name, region_name='us-east-1'):
+def load_to_s3(dataframe, bucket_name, file_name, aws_access_key=None, aws_secret_key=None, region_name='us-east-1'):
     """
     Upload a DataFrame to an S3 bucket as a CSV file.
     
@@ -135,14 +139,15 @@ def load_to_s3(dataframe, bucket_name, file_name, region_name='us-east-1'):
         dataframe (pd.DataFrame): The DataFrame to upload.
         bucket_name (str): The name of the S3 bucket.
         file_name (str): The key name for the file in the S3 bucket.
+        aws_access_key (str, optional): AWS access key ID. If None, environment credentials will be used.
+        aws_secret_key (str, optional): AWS secret access key. If None, environment credentials will be used.
         region_name (str): The AWS region where the bucket is located. Default is 'us-east-1'.
     
     Raises:
         ValueError: If the DataFrame is empty.
         Exception: For other unexpected issues during upload.
     """
-    import pandas as pd
-    import io
+    
 
     # Validate that the DataFrame is not empty
     if dataframe.empty:
@@ -150,7 +155,15 @@ def load_to_s3(dataframe, bucket_name, file_name, region_name='us-east-1'):
     
     # Create an S3 client
     try:
-        s3_client = boto3.client('s3', region_name=region_name)
+        if aws_access_key and aws_secret_key:
+            s3_client = boto3.client(
+                's3',
+                aws_access_key_id=aws_access_key,
+                aws_secret_access_key=aws_secret_key,
+                region_name=region_name
+            )
+        else:
+            s3_client = boto3.client('s3', region_name=region_name)
         
         # Convert DataFrame to CSV in memory
         csv_buffer = io.StringIO()
@@ -178,7 +191,7 @@ def load_to_s3(dataframe, bucket_name, file_name, region_name='us-east-1'):
 
 if __name__ == "__main__":
 
-    matches_data = extract_data()
+    matches_data = extract_data(auth_token=auth_token)
     # Transform data
     team_performance_df = transform_match_data(matches_data)
     # Sort DataFrame by points in descending order
@@ -190,5 +203,7 @@ if __name__ == "__main__":
     load_to_s3(
         dataframe=team_performance_df,
         bucket_name='pl-standing',
-        file_name='team_performance.csv'
+        file_name='team_performance.csv',
+        aws_access_key=aws_access_key,  
+        aws_secret_key=aws_secret_key   
     )
