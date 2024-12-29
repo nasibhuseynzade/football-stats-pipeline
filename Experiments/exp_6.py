@@ -14,13 +14,12 @@ import requests
 import boto3
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import io
+import sqlite3
 
 with open("config.json") as f:
     config = json.load(f)
 
 auth_token = config["X-Auth-Token"]
-aws_access_key = config["aws_access_key_id"]
-aws_secret_key = config["aws_secret_access_key"]
 
 def extract_data(auth_token):
     """Extract match data from football-data.org API"""
@@ -132,10 +131,8 @@ def transform_match_data(json_data):
     return df[columns]
 
 
-import sqlite3
-
-
 # Insert data into the database
+
 def load_data_to_db(df):
     for index, row in df.iterrows():
         cursor.execute('''
@@ -150,19 +147,18 @@ def load_data_to_db(df):
     # Commit the changes
     conn.commit()
 
-
-
 if __name__ == "__main__":
-
-
-    # Create a connection to SQLite (or PostgreSQL if you choose)
+    # Create a connection to SQLite
     conn = sqlite3.connect('league_table.db')
     cursor = conn.cursor()
 
-    # Create the table if it doesn't exist
+    # Drop existing table if you want to start fresh
+    cursor.execute('DROP TABLE IF EXISTS league_table')
+
+    # Create the table with team_name as PRIMARY KEY
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS league_table (
-            team_name TEXT,
+            team_name TEXT PRIMARY KEY,
             total_games INTEGER,
             points INTEGER,
             goals_scored INTEGER,
@@ -188,15 +184,12 @@ if __name__ == "__main__":
     # Save to CSV
     team_performance_df.to_csv('team_performance.csv', index=False)
     
-    # Example usage
+    # Load data to database
     load_data_to_db(team_performance_df)
 
-    # Query the database
-    query = "SELECT * FROM league_table"
-    df = pd.read_sql_query(query, conn)
-
-    # Display the table as a DataFrame
-    print(df)
+    # Verify the data (optional)
+    cursor.execute('SELECT * FROM league_table')
+    print(f"Total rows in database: {len(cursor.fetchall())}")
 
     # Close the connection
     conn.close()
