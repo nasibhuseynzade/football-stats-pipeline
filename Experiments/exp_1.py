@@ -2,6 +2,7 @@
 
 import json
 import requests
+import io
 import pandas as pd
 
 # API URL
@@ -10,7 +11,7 @@ url= "https://api.football-data.org/v4/competitions/PL/matches"
 
 
 # Get the X-Auth-Token from user input
-auth_token = input("Please enter your X-Auth-Token: ")
+auth_token = "0d1a4376aa1c463c8952abef2008f1b3"
 
 # Headers (Authentication key)
 headers = {
@@ -49,9 +50,17 @@ for match in matches:
         "Score": f"{score_home}-{score_away}",
         "Date": match.get("utcDate")  # Maç tarihi
     })
-
 df = pd.DataFrame(matches_data)
+# Group matches by matchday
+grouped_matches = df.groupby("Matchday").apply(
+    lambda x: x[["Home Team", "Away Team", "Score", "Date"]].to_dict(orient="records")
+).to_dict()
 
+# Prepare JSON output
+json_output = json.dumps(grouped_matches)
+
+
+print(json_output)
 # Loading the data to CSV
-df.to_csv("premier_league_matches.csv", index=False)
-print("Mathc stats are extracted to 'premier_league_matches.csv' folder")
+#df.to_csv("premier_league_matches.csv", index=False)
+#print("Mathc stats are extracted to 'premier_league_matches.csv' folder")
