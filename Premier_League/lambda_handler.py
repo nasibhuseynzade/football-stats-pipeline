@@ -8,7 +8,7 @@ import io
 import requests
 
 
-auth_token = "0d1a4376aa1c463c8952abef2008f1b3"
+TOKEN_ENV_VAR = "FOOTBALL_DATA_API_TOKEN"
 
 def extract_data(auth_token):
     """Extract match data from football-data.org API"""
@@ -37,6 +37,13 @@ def extract_data(auth_token):
     print("Match stats are extracted to '/tmp/matches.json'")
     
     return matches
+
+
+def get_auth_token():
+    token = os.getenv(TOKEN_ENV_VAR)
+    if not token:
+        raise ValueError(f"Missing required environment variable: {TOKEN_ENV_VAR}")
+    return token
 
 
 def transform_match_data(json_data):
@@ -120,11 +127,12 @@ def transform_match_data(json_data):
 
 def lambda_handler(event, context):
     try:
-        # Authentication token (consider using environment variables for security)
-        auth_token = "0d1a4376aa1c463c8952abef2008f1b3"
+        auth_token = get_auth_token()
         
         # Extract data from the external API
         matches_data = extract_data(auth_token=auth_token)
+        if matches_data is None:
+            raise RuntimeError("Match data could not be fetched from API")
         
         # Transform data
         team_performance_df = transform_match_data(matches_data)

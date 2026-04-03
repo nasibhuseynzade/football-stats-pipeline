@@ -1,0 +1,14 @@
+# Secrets
+.env
+.env.*
+!.env.example
+config.json
+sofa.ipynb
+try_1.ipynb
+
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store

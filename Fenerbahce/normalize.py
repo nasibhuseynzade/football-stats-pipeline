@@ -1,10 +1,11 @@
 import json
+import os
 import pandas as pd
 import requests
 import requests
 from datetime import datetime
 
-auth_token="d77b6c777bmsh11749babe461d18p13a86fjsn14f5ae360f4c"
+auth_token = os.getenv("RAPIDAPI_KEY", "")
 
 
 def extract_standings(auth_token):
