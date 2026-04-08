@@ -4,7 +4,6 @@ from collections import defaultdict
 import io
 import requests
 import boto3
-from datetime import datetime
 
 # Initialize S3 client
 s3_client = boto3.client('s3')
