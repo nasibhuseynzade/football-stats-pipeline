@@ -126,7 +126,7 @@ def transform_match_data(matches, last_date, team_stats):
 
 def lambda_handler(event, context):
     try:
-        auth_token = "0d1a4376aa1c463c8952abef2008f1b3" 
+        auth_token = "our_api_token_here" # Replace with your actual API token
         
         # 1. Read state (memory)
         last_date = get_last_processed_date()
